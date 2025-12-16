@@ -58,10 +58,9 @@ Command parseCommand(const string& line) {
 void runTerminal(FileSystem& fs) {
     string line;
     
-    cout << "\n╔════════════════════════════════════════════════════════════╗" << endl;
-    cout << "║     Linux-подобный терминал файловой системы              ║" << endl;
-    cout << "║     Введите 'help' для списка команд, 'exit' для выхода   ║" << endl;
-    cout << "╚════════════════════════════════════════════════════════════╝" << endl;
+    cout << "\n" << endl;
+    cout << "Linux-подобный терминал файловой системы" << endl;
+    cout << "Введите 'help' для списка команд, 'exit' для выхода" << endl;
     
     while (true) {
         const char* user = getenv("USER");
