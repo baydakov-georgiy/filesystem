@@ -59,7 +59,7 @@ uint32_t HashFunction::hash(const string& str) {
 AVLHashNode::AVLHashNode(uint32_t h, const string& n, shared_ptr<FSNode> nd)
     : hash(h), name(n), node(nd), left(nullptr), right(nullptr), height(1) {}
 
-HTreeIndex::HTreeIndex() : root(nullptr) {}
+HTreeIndex::HTreeIndex() : root(nullptr), nodeCount(0) {}
 
 HTreeIndex::~HTreeIndex() {
     deleteTree(root);
@@ -178,36 +178,44 @@ AVLHashNode* HTreeIndex::findMin(AVLHashNode* node) {
     return node;
 }
 
-AVLHashNode* HTreeIndex::removeNode(AVLHashNode* node, uint32_t hash, const string& name) {
-    if (!node) return nullptr;
+pair<AVLHashNode*, bool> HTreeIndex::removeNode(AVLHashNode* node, uint32_t hash, const string& name) {
+    if (!node) return {nullptr, false};
 
+    bool removed = false;
     if (hash < node->hash) {
-        node->left = removeNode(node->left, hash, name);
+        auto [newLeft, wasRemoved] = removeNode(node->left, hash, name);
+        node->left = newLeft;
+        removed = wasRemoved;
     } else if (hash > node->hash) {
-        node->right = removeNode(node->right, hash, name);
+        auto [newRight, wasRemoved] = removeNode(node->right, hash, name);
+        node->right = newRight;
+        removed = wasRemoved;
     } else if (node->name == name) {
+        removed = true;
         if (!node->left || !node->right) {
             AVLHashNode* temp = node->left ? node->left : node->right;
             delete node;
-            return temp;
+            return {temp, true};
         } else {
             AVLHashNode* temp = findMin(node->right);
             node->hash = temp->hash;
             node->name = temp->name;
             node->node = temp->node;
-            node->right = removeNode(node->right, temp->hash, temp->name);
+            auto [newRight, wasRemoved] = removeNode(node->right, temp->hash, temp->name);
+            node->right = newRight;
         }
     } else {
-        AVLHashNode* newLeft = removeNode(node->left, hash, name);
-        if (newLeft != node->left) {
+        auto [newLeft, wasRemoved] = removeNode(node->left, hash, name);
+        if (wasRemoved) {
             node->left = newLeft;
-            return balance(node);
+            return {balance(node), true};
         }
-
-        node->right = removeNode(node->right, hash, name);
+        auto [newRight, wasRemoved2] = removeNode(node->right, hash, name);
+        node->right = newRight;
+        removed = wasRemoved2;
     }
 
-    return balance(node);
+    return {balance(node), removed};
 }
 
 void HTreeIndex::collectNodes(AVLHashNode* node, vector<shared_ptr<FSNode>>& result) const {
@@ -232,6 +240,7 @@ void HTreeIndex::deleteTree(AVLHashNode* node) {
 void HTreeIndex::insert(const string& name, shared_ptr<FSNode> node) {
     uint32_t hashValue = HashFunction::hash(name);
     root = insertNode(root, hashValue, name, node);
+    nodeCount++;
 }
 
 shared_ptr<FSNode> HTreeIndex::find(const string& name) const {
@@ -241,10 +250,12 @@ shared_ptr<FSNode> HTreeIndex::find(const string& name) const {
 
 bool HTreeIndex::remove(const string& name) {
     uint32_t hashValue = HashFunction::hash(name);
-    int oldSize = countNodes(root);
-    root = removeNode(root, hashValue, name);
-    int newSize = countNodes(root);
-    return newSize < oldSize;
+    auto [newRoot, removed] = removeNode(root, hashValue, name);
+    root = newRoot;
+    if (removed) {
+        nodeCount--;
+    }
+    return removed;
 }
 
 vector<shared_ptr<FSNode>> HTreeIndex::getAllNodes() const {
@@ -254,7 +265,7 @@ vector<shared_ptr<FSNode>> HTreeIndex::getAllNodes() const {
 }
 
 size_t HTreeIndex::size() const {
-    return countNodes(root);
+    return nodeCount;
 }
 
 bool HTreeIndex::empty() const {

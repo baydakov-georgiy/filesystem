@@ -1,0 +1,23 @@
+=== AVL H-Tree Performance Statistics ===
+
+INSERT Operation:
+  Size range: 10 - 100000 elements
+  Best case:    2218.10 - 4561.88 ns
+  Average case: 1279.34 - 2833.56 ns
+  Worst case:   1106.72 - 2311.12 ns
+  Worst/Best ratio at max size: 0.42x
+
+FIND Operation:
+  Size range: 10 - 100000 elements
+  Best case:    158.46 - 247.49 ns
+  Average case: 221.74 - 406.27 ns
+  Worst case:   209.44 - 547.35 ns
+  Worst/Best ratio at max size: 2.18x
+
+REMOVE Operation:
+  Size range: 10 - 100000 elements
+  Best case:    1076.20 - 2467.45 ns
+  Average case: 1448.08 - 2959.10 ns
+  Worst case:   838.00 - 1952.39 ns
+  Worst/Best ratio at max size: 0.77x
+

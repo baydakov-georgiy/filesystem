@@ -44,6 +44,7 @@ struct AVLHashNode {
 class HTreeIndex {
     private:
         AVLHashNode* root;
+        int nodeCount;
 
         int getHeight(AVLHashNode* n) const;
         int getBalance(AVLHashNode* n) const;
@@ -56,7 +57,7 @@ class HTreeIndex {
         shared_ptr<FSNode> findNode(AVLHashNode* node, uint32_t hash, 
                 const string& name) const;
         AVLHashNode* findMin(AVLHashNode* node);
-        AVLHashNode* removeNode(AVLHashNode* node, uint32_t hash, const string& name);
+        pair<AVLHashNode*, bool> removeNode(AVLHashNode* node, uint32_t hash, const string& name);
         void collectNodes(AVLHashNode* node, vector<shared_ptr<FSNode>>& result) const;
         int countNodes(AVLHashNode* node) const;
         void deleteTree(AVLHashNode* node);
